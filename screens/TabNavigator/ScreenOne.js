@@ -31,6 +31,111 @@ class Carousel extends Component {
 }
 
 export default class ScreenOne extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      latitude: null,
+      longitude: null,
+      userid: 1,
+      time: null,
+      date:null,
+      error: null,
+      seconds: 5,
+      isLoading: true,
+    };
+
+  }
+
+  componentDidMount() {
+
+
+    setInterval(() => {
+
+       this.watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          this.setState({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            userid: 1,
+            time:  new Date().toLocaleString(),
+            date: new Date().toDateString(),
+            error: null,
+          });
+        },
+        (error) => this.setState({ error: error.message }),
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
+      );
+
+     return fetch("http://192.168.0.20:8000/predict", 
+        //{method: "POST", body: JSON.stringify({userid: this.state.userid, latitude: this.state.latitude, longitude: this.state.longitude,
+                                               // day : 1, time: 11})}
+        {
+          method: "POST", 
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({userId: 1, productId: 1, userLatitude: 37.3165, userLongitude: -97.1830,
+                                                day : 1, time: 11
+                                              }),
+          })
+      .then((response) => (response.json()))
+      .then((responseData) => {
+
+        if (responseData.hasOwnProperty('responseMessage')){ 
+            console.log("Yes! It is a bad request");
+        }
+        else{
+            console.log("Going to the esel part");
+            fetch("https://exp.host/--/api/v2/push/send",
+              {
+                method: "POST",  
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({to: "ExponentPushToken[mRl75BB25h8EqVHkA7NwWq]", title: "Checkout+",
+                      body: "Purchase " + responseData.productName +"@ " + responseData.shopAddress + " for " + responseData.price + "?"
+                })
+              })
+        }
+        })
+      .catch((err) => console.error(err)) 
+      .done();
+
+      //This is for push notif
+      AppState.addEventListener('change', this.handleAppStateChange);
+
+    }, 5000);
+  }
+
+  componentWillUnmount() {
+    navigator.geolocation.clearWatch(this.watchId);
+        // AppState.removeEventListener('change', this.handleAppStateChange);
+
+  }
+
+  //   handleAppStateChange(appState) {
+  //   if (appState === 'background') {
+  //     let date = new Date(Date.now() + (this.state.seconds * 1000));
+
+  //     if (Platform.OS === 'ios') {
+  //       date = date.toISOString();
+  //     }
+
+  //   //   PushNotification.localNotificationSchedule({
+  //   //     message: "My Notification Message",
+  //   //     date,
+  //   //   });
+  //   }
+  // }
+
+
+
+
+
+
   render() {
     const images = [
       {
