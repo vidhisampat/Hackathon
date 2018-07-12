@@ -16,7 +16,7 @@ class Carousel extends Component {
           <ScrollView
             horizontal
             pagingEnabled
-            showsHorizontalScrollIndicator={false}
+            showsHorizontalScrollIndicator={true}
           >
             {images.map(image => (
               <Image style={styles.image} source={image.source} />
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: Constants.statusBarHeight,
+    padding: Constants.statusBarHeight,
   },
   scrollContainer: {
     height,
