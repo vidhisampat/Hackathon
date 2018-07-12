@@ -13,7 +13,7 @@ import HomeScreenTabNavigator from './HomeScreenTabNavigator'
 const InnerStackNavigator = new StackNavigator({
     TabNavigator: {
         screen: HomeScreenTabNavigator,
-        navigationOptions: { title: 'App Name' }
+        navigationOptions: { title: 'Checkout+' }
 
     }
 })

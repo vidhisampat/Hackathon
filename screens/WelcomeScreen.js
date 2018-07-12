@@ -12,7 +12,7 @@ class WelcomeScreen extends Component {
         super(props)
 
         this.state = ({
-            email: '',
+            email: 'vsam@gmail.com',
             password: ''
         })
     }
@@ -32,6 +32,7 @@ class WelcomeScreen extends Component {
                             autoCorrect={false}
                             autoCapitalize="none"
                             onChangeText={(email) => this.setState({ email })}
+                            value={this.state.email}
                         />
 
                     </Item>

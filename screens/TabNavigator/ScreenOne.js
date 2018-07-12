@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { View, ScrollView, Image, StyleSheet, Dimensions } from 'react-native';
-import { Constants } from 'expo';
+import { View, ScrollView, Image, StyleSheet, Dimensions,Text, AppState, Alert } from 'react-native';
+import { Constants, Notifications } from 'expo';
 
 const { width } = Dimensions.get('window');
 const height = width * 0.8
@@ -10,18 +10,23 @@ class Carousel extends Component {
     const { images } = this.props;
     if (images && images.length) {
       return (
-        <View
-          style={styles.scrollContainer}
-        >
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={true}
-          >
-            {images.map(image => (
-              <Image style={styles.image} source={image.source} />
-            ))}
-          </ScrollView>
+       <View style={{flex: 1}}>
+            <View style={styles.navBar}>
+                <Text style={styles.nameHeader}>Current Offers</Text>
+            </View>
+
+
+            <View style={styles.scrollContainer}>
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={true}>
+                {images.map(function(image, i){
+                    return <Image style={styles.image} source={image.source} key={i} />
+                      })}
+              </ScrollView>
+            </View>
+
         </View>
       );
     }
@@ -43,12 +48,32 @@ export default class ScreenOne extends Component {
       error: null,
       seconds: 5,
       isLoading: true,
+      appState: AppState.currentState
     };
 
   }
 
+  // async registerForPushNotifications() {
+  //   this.subscription = Notifications.addListener(this.handleNotification);
+  // }
+
+  // handleNotification = notification => {
+
+  //   console.log("ENTERESHERERERERERER")
+  //   Alert.alert(
+  //       'Order Placed',
+  //       'My Alert Msg',
+  //       [
+  //         {text: 'OK', onPress: () => console.log('OK Pressed')},
+  //       ],
+  //       { cancelable: false }
+  //     )
+  // };
+
+
   componentDidMount() {
 
+    // this.registerForPushNotifications();
 
     setInterval(() => {
 
@@ -58,7 +83,7 @@ export default class ScreenOne extends Component {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
             userid: 1,
-            time:  new Date().toLocaleString(),
+            time:  new Date().getHours(),
             date: new Date().toDateString(),
             error: null,
           });
@@ -67,8 +92,8 @@ export default class ScreenOne extends Component {
         { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
       );
 
-     return fetch("http://192.168.0.20:8000/predict", 
-        //{method: "POST", body: JSON.stringify({userid: this.state.userid, latitude: this.state.latitude, longitude: this.state.longitude,
+     return fetch("http://192.168.0.13:8000/predict", 
+        //{method: "POST", body: JSON.stringify({userid: this.state.userid, latitude: 37.3165this.state.latitude, longitude: -97.1830this.state.longitude,
                                                // day : 1, time: 11})}
         {
           method: "POST", 
@@ -76,8 +101,8 @@ export default class ScreenOne extends Component {
             Accept: 'application/json',
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({userId: 1, productId: 1, userLatitude: 37.3165, userLongitude: -97.1830,
-                                                day : 1, time: 11
+          body: JSON.stringify({userId: 1, productId: 1, userLatitude: this.state.latitude, userLongitude: this.state.longitude,
+                                                day : 1, time: this.state.time
                                               }),
           })
       .then((response) => (response.json()))
@@ -104,37 +129,43 @@ export default class ScreenOne extends Component {
       .catch((err) => console.error(err)) 
       .done();
 
-      //This is for push notif
-      AppState.addEventListener('change', this.handleAppStateChange);
-
+              // fetch("https://exp.host/--/api/v2/push/send",
+              // {
+              //   method: "POST",  
+              //   headers: {
+              //       'Accept': 'application/json',
+              //       'Content-Type': 'application/json',
+              //   },
+              //   body: JSON.stringify({to: "ExponentPushToken[mRl75BB25h8EqVHkA7NwWq]", title: "Checkout+",
+              //         body: "HELLLO"
+              //   })
+              // })
     }, 5000);
+
+    //This is for push notif
+    // AppState.addEventListener('change', this.handleAppStateChange);  }) 
+
   }
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchId);
-        // AppState.removeEventListener('change', this.handleAppStateChange);
+    // AppState.removeEventListener('change', this.handleAppStateChange);
 
   }
 
-  //   handleAppStateChange(appState) {
-  //   if (appState === 'background') {
-  //     let date = new Date(Date.now() + (this.state.seconds * 1000));
-
-  //     if (Platform.OS === 'ios') {
-  //       date = date.toISOString();
-  //     }
-
-  //   //   PushNotification.localNotificationSchedule({
-  //   //     message: "My Notification Message",
-  //   //     date,
-  //   //   });
+  // handleAppStateChange = (nextAppState) => {
+  //   if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+  //      Alert.alert(
+  //       'Order Placed',
+  //       'My Alert Msg',
+  //       [
+  //         {text: 'OK', onPress: () => console.log('OK Pressed')},
+  //       ],
+  //       { cancelable: false }
+  //     )
   //   }
+  //   this.setState({appState: nextAppState});
   // }
-
-
-
-
-
 
   render() {
     const images = [
@@ -144,19 +175,13 @@ export default class ScreenOne extends Component {
         },
       },
       {
-        source: {
-          uri: 'https://cdn.pixabay.com/photo/2017/05/02/22/43/mushroom-2279558__340.jpg',
-        },
+        source: require('../../assets/f1.jpg')
       },
       {
-        source: {
-          uri: 'https://cdn.pixabay.com/photo/2017/05/18/21/54/tower-bridge-2324875__340.jpg',
-        },
+        source: require('../../assets/f2.jpg')
       },
       {
-        source: {
-          uri: 'https://cdn.pixabay.com/photo/2017/05/16/21/24/gorilla-2318998__340.jpg',
-        },
+        source: require('../../assets/f3.jpg')
       },
       
     ];
@@ -180,7 +205,16 @@ const styles = StyleSheet.create({
     height,
   },
   image: {
-    width,
-    height,
+    width: 335,
+    height: 335,
   },
+  navBar: {
+    height: 90,
+    justifyContent: 'center',
+    alignContent: 'center',
+  },
+    nameHeader: {
+    fontSize: 22,
+    textAlign: 'center'
+  }
 });
